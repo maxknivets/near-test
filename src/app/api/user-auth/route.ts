@@ -28,8 +28,8 @@ async function authenticate(
   // - The object signed contains the right message and domain
 
   const full_key_of_user = await verifyFullKeyBelongsToUser(
+    publicKey,
     accountId,
-    publicKey
   );
   const valid_signature = verifySignature(
     message,
@@ -52,6 +52,9 @@ function verifySignature(
   const decodedNonce = Buffer.from(nonce, "hex");
 
   const payload = {
+    // The tag's value is a hardcoded value as per
+    // defined in the NEP [NEP413](https://github.com/near/NEPs/blob/master/neps/nep-0413.md)
+    tag: 2147484061,
     message,
     nonce: decodedNonce,
     recipient,
@@ -59,9 +62,11 @@ function verifySignature(
 
   const borsh_schema = {
     struct: {
-      message: "string",
-      nonce: { array: { type: "u8" } },
-      recipient: "string",
+      tag: 'u32',
+      message: 'string',
+      nonce: { array: { type: 'u8', len: 32 } },
+      recipient: 'string',
+      callbackUrl: { option: 'string' },
     },
   };
 
@@ -100,7 +105,7 @@ async function verifyFullKeyBelongsToUser(
 
 // Aux method
 async function fetch_all_user_keys(accountId: string) {
-  const keys = await fetch("https://rpc.testnet.near.org", {
+  const keys = await fetch("https://rpc.mainnet.near.org", {
     method: "post",
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: `{"jsonrpc":"2.0", "method":"query", "params":["access_key/${accountId}", ""], "id":1}`,
