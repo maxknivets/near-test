@@ -47,7 +47,7 @@ export default function Home() {
 
   const signMessage = async (walletName: string) => {
     const wallet = await selector?.wallet(walletName);
-    //Array length 68 does not match schema length 32 at value.nonce for my-near-wallet
+    // Array length 68 does not match schema length 32 at value.nonce for my-near-wallet
     const challenge = randomBytes(32);
 
     const message = "Testing!";

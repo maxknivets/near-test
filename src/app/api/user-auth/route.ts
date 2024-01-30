@@ -2,7 +2,21 @@ import { utils } from "near-api-js";
 import { sha256 } from "js-sha256";
 import * as borsh from "borsh";
 
-export async function authenticate(
+// Guide taken from https://docs.near.org/develop/integrate/backend-login#2-ask-the-user-to-sign-the-challenge
+// Need help with verifySignature function
+// ! HELPME Q1. What is Payload? Where to get it
+// const payload = new Payload({
+//   message: MESSAGE,
+//   nonce: CHALLENGE,
+//   recipient: APP,
+//   callbackUrl: cURL,
+// });
+// ! HELPME Q2. What is payloadSchema and is it near/borsh-js?
+// const borsh_payload = borsh.serialize(payloadSchema, payload);
+// ! HELPME Q3. On My Near Wallet, signature fails with an error:
+// ! "Array length (random number) does not match schema length 32 at value.nonce for my-near-wallet"
+
+async function authenticate(
   message: string,
   accountId: string,
   publicKey: string,
@@ -20,7 +34,7 @@ export async function authenticate(
   return valid_signature && full_key_of_user;
 }
 
-export function verifySignature(
+function verifySignature(
   message: string,
   publicKey: string,
   signature: string
@@ -47,7 +61,7 @@ export function verifySignature(
   return myPK.verify(to_sign, real_signature);
 }
 
-export async function verifyFullKeyBelongsToUser(
+async function verifyFullKeyBelongsToUser(
   publicKey: string,
   accountId: string
 ) {
