@@ -50,13 +50,14 @@ export default function Home() {
     // const message = "Login with NEAR";
     // debugger;
     const message = "Testing!";
-    debugger;
-    await wallet?.signMessage({
-      message,
-      nonce: challenge,
-      recipient: "maxknivets.near",
-      callbackUrl: "/api/user-auth",
-    });
+    const accounts = await wallet?.getAccounts();
+    if (accounts)
+      await wallet?.signMessage({
+        message,
+        nonce: challenge,
+        recipient: accounts[0].accountId,
+        callbackUrl: "/api/user-auth",
+      });
   };
 
   return (
