@@ -10,6 +10,7 @@ import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 import { useEffect, useState } from "react";
 import { randomBytes } from "crypto";
 import { setupSender } from "@near-wallet-selector/sender";
+import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
 
 export default function Home() {
   const [selector, setSelector] = useState<WalletSelector | undefined>();
@@ -32,7 +33,7 @@ export default function Home() {
     const createme = async () => {
       const selector = await setupWalletSelector({
         network: "mainnet",
-        modules: [setupMyNearWallet(), setupSender()],
+        modules: [setupMyNearWallet(), setupSender(), setupMeteorWallet()],
       });
 
       const modal = setupModal(selector, {
@@ -49,7 +50,7 @@ export default function Home() {
     const wallet = await selector?.wallet(walletName);
     // Array length 68 does not match schema length 32 at value.nonce for my-near-wallet
     const challenge = randomBytes(32);
-
+    const nonce = challenge.toString("hex");
     const message = "Testing!";
     const accounts = await wallet?.getAccounts();
     if (accounts) {
@@ -57,12 +58,14 @@ export default function Home() {
         message,
         nonce: challenge,
         recipient: accounts[0].accountId,
+        callbackUrl: "",
       });
       console.log(signatureResult);
       const accountId = signatureResult?.accountId;
       const publicKey = signatureResult?.publicKey;
       const signature = signatureResult?.signature;
       const result = await axios.post("/api/user-auth", {
+        nonce,
         message,
         accountId,
         publicKey,
@@ -83,9 +86,9 @@ export default function Home() {
       </button>
       <button
         className="border-2 border-black px-4 py-2"
-        onClick={() => signMessage("sender")}
+        onClick={() => signMessage("meteor-wallet")}
       >
-        Sign Message (Sender)
+        Sign Message (Meteor Wallet)
       </button>
       <button
         className="border-2 border-black px-4 py-2"

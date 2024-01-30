@@ -20,6 +20,7 @@ async function authenticate(
   message: string,
   accountId: string,
   publicKey: string,
+  nonce: string,
   signature: string
 ) {
   // A user is correctly authenticated if:
@@ -30,30 +31,44 @@ async function authenticate(
     accountId,
     publicKey
   );
-  const valid_signature = verifySignature(message, publicKey, signature);
+  const valid_signature = verifySignature(
+    message,
+    nonce,
+    accountId,
+    publicKey,
+    signature
+  );
   return valid_signature && full_key_of_user;
 }
 
 function verifySignature(
   message: string,
+  nonce: string,
+  recipient: string,
   publicKey: string,
   signature: string
 ) {
   // Reconstruct the payload that was **actually signed**
+  const decodedNonce = Buffer.from(nonce, "hex");
 
-  // ! HELP 1. What is Payload? Where to get it
-  // const payload = new Payload({
-  //   message: MESSAGE,
-  //   nonce: CHALLENGE,
-  //   recipient: APP,
-  //   callbackUrl: cURL,
-  // });
-  // ! HELP 2. What is payloadSchema and is it near/borsh-js?
-  // const borsh_payload = borsh.serialize(payloadSchema, payload);
-  // const to_sign = Uint8Array.from(sha256.array(borsh_payload));
+  const payload = {
+    message,
+    nonce: decodedNonce,
+    recipient,
+  };
+
+  const borsh_schema = {
+    struct: {
+      message: "string",
+      nonce: { array: { type: "u8" } },
+      recipient: "string",
+    },
+  };
+
+  const borsh_payload = borsh.serialize(borsh_schema, payload);
+  const to_sign = Uint8Array.from(sha256.array(borsh_payload));
 
   // Reconstruct the signature from the parameter given in the URL
-  let to_sign = Buffer.from(message);
   let real_signature = Buffer.from(signature, "base64");
 
   // Use the public Key to verify that the private-counterpart signed the message
@@ -97,7 +112,13 @@ async function fetch_all_user_keys(accountId: string) {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { message, accountId, publicKey, signature } = body;
-  const isAuthed = await authenticate(message, accountId, publicKey, signature);
+  const { message, accountId, publicKey, nonce, signature } = body;
+  const isAuthed = await authenticate(
+    message,
+    accountId,
+    publicKey,
+    nonce,
+    signature
+  );
   return new Response("hello world, boolean: " + isAuthed);
 }
