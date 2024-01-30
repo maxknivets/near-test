@@ -12,6 +12,10 @@
     "@near-wallet-selector/modal-ui": "^8.9.3",
     "@near-wallet-selector/my-near-wallet": "^8.9.3",
     "@near-wallet-selector/sender": "^8.9.3",
+    "axios": "^1.6.7",
+    "borsh": "^2.0.0",
+    "js-sha256": "^0.11.0",
+    "near-api-js": "^2.1.4",
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18"

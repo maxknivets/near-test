@@ -1,8 +1,9 @@
 "use client";
-import Image from "next/image";
+import axios from "axios";
+
 import { setupWalletSelector } from "@near-wallet-selector/core";
 import type { WalletSelectorModal } from "@near-wallet-selector/modal-ui";
-import type { MyNearWalletParams } from "@near-wallet-selector/my-near-wallet";
+
 import type { WalletSelector } from "@near-wallet-selector/core";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
@@ -43,28 +44,55 @@ export default function Home() {
     };
     createme();
   }, []);
-  const verifyKEK = async () => {
-    const wallet = await selector?.wallet("sender");
-    //Array length 68 does not match schema length 32 at value.nonce
+
+  const signMessage = async (walletName: string) => {
+    const wallet = await selector?.wallet(walletName);
+    //Array length 68 does not match schema length 32 at value.nonce for my-near-wallet
     const challenge = randomBytes(32);
-    // const message = "Login with NEAR";
-    // debugger;
+
     const message = "Testing!";
     const accounts = await wallet?.getAccounts();
-    if (accounts)
-      await wallet?.signMessage({
+    if (accounts) {
+      const signatureResult = await wallet?.signMessage({
         message,
         nonce: challenge,
         recipient: accounts[0].accountId,
-        callbackUrl: "/api/user-auth",
       });
+      console.log(signatureResult);
+      const accountId = signatureResult?.accountId;
+      const publicKey = signatureResult?.publicKey;
+      const signature = signatureResult?.signature;
+      const result = await axios.post("/api/user-auth", {
+        message,
+        accountId,
+        publicKey,
+        signature,
+      });
+      debugger;
+      console.log(result.data);
+    }
   };
 
   return (
-    <main className="flex p-24">
-      <div>I am alive</div>
-      <button onClick={() => modal?.show()}>arara</button>
-      <button onClick={() => verifyKEK()}>Barararak</button>
+    <main className="flex p-24 gap-x-4">
+      <button
+        className="border-2 border-black px-4 py-2"
+        onClick={() => modal?.show()}
+      >
+        Show Modal
+      </button>
+      <button
+        className="border-2 border-black px-4 py-2"
+        onClick={() => signMessage("sender")}
+      >
+        Sign Message (Sender)
+      </button>
+      <button
+        className="border-2 border-black px-4 py-2"
+        onClick={() => signMessage("my-near-wallet")}
+      >
+        Sign Message (My Near Wallet)
+      </button>
     </main>
   );
 }
