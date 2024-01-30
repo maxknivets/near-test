@@ -1,22 +1,12 @@
-export async function GET(request: Request) {
-  const headers = request.headers;
-  const body = request.body;
-  return { headers, body };
-}
+export async function GET(request: Request) {}
 
-export async function HEAD(request: Request) {
-  const headers = request.headers;
-  const body = request.body;
-  console.log(headers, body);
-
-  return { headers, body };
-}
+export async function HEAD(request: Request) {}
 
 export async function POST(request: Request) {
   const headers = request.headers;
   const body = request.body;
   console.log(headers, body);
-  return { headers, body };
+  return new Response("hello world");
 }
 
 export async function PUT(request: Request) {}
